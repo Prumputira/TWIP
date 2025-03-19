@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import button, card, form_field, alert, sidebar_item %}
+
+{% block title %}UI Style Guide{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">True Wealth UI Style Guide</h1>
+<p class="lead">This page demonstrates all reusable components in the True Wealth application.</p>
+
+<!-- Color Palette Section -->
+<section class="mb-5">
+  <h2 class="section-title">Color Palette</h2>
+  <div class="row">
+    <div class="col-md-2 mb-3">
+      <div class="color-swatch" style="background-color: #8A2BE2">
+        <div class="swatch-label">Primary<br>#8A2BE2</div>
+      </div>
+    </div>
+    <div class="col-md-2 mb-3">
+      <div class="color-swatch" style="background-color: #9966CC">
+        <div class="swatch-label">Primary Hover<br>#9966CC</div>
+      </div>
+    </div>
+    <div class="col-md-2 mb-3">
+      <div class="color-swatch" style="background-color: #b28dff">
+        <div class="swatch-label">Primary Light<br>#b28dff</div>
+      </div>
+    </div>
+    <div class="col-md-2 mb-3">
+      <div class="color-swatch" style="background-color: #2a2a2a">
+        <div class="swatch-label">BG Primary<br>#2a2a2a</div>
+      </div>
+    </div>
+    <div class="col-md-2 mb-3">
+      <div class="color-swatch" style="background-color: #343a40">
+        <div class="swatch-label">BG Secondary<br>#343a40</div>
+      </div>
+    </div>
+    <div class="col-md-2 mb-3">
+      <div class="color-swatch" style="background-color: #212121">
+        <div class="swatch-label">Nav BG<br>#212121</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Typography Section -->
+<section class="mb-5">
+  <h2 class="section-title">Typography</h2>
+  
+  <h1>Heading 1</h1>
+  <h2>Heading 2</h2>
+  <h3>Heading 3</h3>
+  <h4>Heading 4</h4>
+  <h5>Heading 5</h5>
+  <h6>Heading 6</h6>
+  
+  <p class="lead mt-3">This is lead text, used for introductory paragraphs.</p>
+  
+  <p>This is a standard paragraph. The quick brown fox jumps over the lazy dog.</p>
+  
+  <p><strong>This text is bold.</strong></p>
+  <p><em>This text is italicized.</em></p>
+  <p class="text-purple">This text is in the brand purple color.</p>
+</section>
+
+<!-- Buttons Section -->
+<section class="mb-5">
+  <h2 class="section-title">Buttons</h2>
+  <div class="row">
+    <div class="col-md-3 mb-3">
+      {{ button("Primary Button") }}
+    </div>
+    <div class="col-md-3 mb-3">
+      {{ button("Secondary Button", type="secondary") }}
+    </div>
+    <div class="col-md-3 mb-3">
+      {{ button("Success Button", type="success") }}
+    </div>
+    <div class="col-md-3 mb-3">
+      {{ button("Danger Button", type="danger") }}
+    </div>
+  </div>
+  <div class="row mt-3">
+    <div class="col-md-3 mb-3">
+      {{ button("With Plus Icon", icon="plus") }}
+    </div>
+    <div class="col-md-3 mb-3">
+      {{ button("With Chart Icon", icon="chart-bar") }}
+    </div>
+    <div class="col-md-3 mb-3">
+      {{ button("With Save Icon", icon="save") }}
+    </div>
+    <div class="col-md-3 mb-3">
+      {{ button("With Trash Icon", icon="trash") }}
+    </div>
+  </div>
+</section>
+
+<!-- Cards Section -->
+<section class="mb-5">
+  <h2 class="section-title">Cards</h2>
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      {% call card(title="Basic Card with Title") %}
+        <p>This is a basic card with a title in the header.</p>
+        <p>Cards are used to group related content and actions.</p>
+        {{ button("Card Action", type="primary") }}
+      {% endcall %}
+    </div>
+    
+    <div class="col-md-6 mb-4">
+      {% call card() %}
+        <h5 class="card-title">Card without Header</h5>
+        <p>This card doesn't use the header section, but has an internal title.</p>
+        <p>This is useful when you want a cleaner look.</p>
+        {{ button("Learn More", type="secondary") }}
+      {% endcall %}
+    </div>
+  </div>
+</section>
+
+<!-- Alerts Section -->
+<section class="mb-5">
+  <h2 class="section-title">Alerts</h2>
+  {{ alert("This is a standard info alert.", "info") }}
+  {{ alert("This is a success alert for positive feedback.", "success") }}
+  {{ alert("This is a warning alert for important notices.", "warning") }}
+  {{ alert("This is a danger alert for critical errors.", "danger") }}
+  {{ alert("This is a non-dismissable alert.", "primary", dismissable=False) }}
+</section>
+
+<!-- Sidebar Navigation Example -->
+<section class="mb-5">
+  <h2 class="section-title">Sidebar Navigation</h2>
+  <div class="card">
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-4">
+          <h5>Sidebar Example</h5>
+          <ul class="nav flex-column">
+            {{ sidebar_item("Dashboard", "#", "home", active=True) }}
+            {{ sidebar_item("Bank Accounts", "#", "credit-card") }}
+            {{ sidebar_item("Savings Accounts", "#", "dollar-sign") }}
+            {{ sidebar_item("Investment Accounts", "#", "trending-up") }}
+            {{ sidebar_item("Loans", "#", "file-text") }}
+          </ul>
+        </div>
+        <div class="col-md-8">
+          <p>This demonstrates how sidebar navigation items would appear when using the <code>sidebar_item</code> macro.</p>
+          <p>Each item can have an icon, text, and active state.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+.color-swatch {
+  height: 100px;
+  border-radius: var(--border-radius);
+  display: flex;
+  align-items: flex-end;
+}
+.swatch-label {
+  background-color: rgba(0,0,0,0.7);
+  width: 100%;
+  padding: 8px;
+  border-bottom-left-radius: var(--border-radius);
+  border-bottom-right-radius: var(--border-radius);
+  font-size: 0.8rem;
+}
+</style>
+{% endblock %}

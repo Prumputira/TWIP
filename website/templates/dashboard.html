@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% from "components/macros.html" import sidebar_item, card %}
+
+{% block content %}
+<div class="row">
+  <!-- Left sidebar -->
+  <div class="col-md-3 col-lg-2 d-md-block sidebar pt-3">
+    <div class="sidebar-sticky">
+      <h5 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+        <span>Accounts</span>
+      </h5>
+      <ul class="nav flex-column">
+        {{ sidebar_item("Bank Accounts", url_for('views.bank_accounts'), "credit-card", active_page == 'bank_accounts') }}
+        {{ sidebar_item("Savings Accounts", url_for('views.savings_accounts'), "dollar-sign", active_page == 'savings_accounts') }}
+        {{ sidebar_item("Investment Accounts", url_for('views.investment_accounts'), "trending-up", active_page == 'investment_accounts') }}
+        {{ sidebar_item("Loans", url_for('views.loans'), "credit-card", active_page == 'loans') }}
+      </ul>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <div class="col-md-9 ml-sm-auto col-lg-10 px-md-4">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+      <h1 class="h2">Dashboard</h1>
+    </div>
+    
+    <!-- This is where the content for each page will be rendered -->
+    {% block dashboard_content %}
+    <div class="row">
+      <div class="col-md-12">
+        {% call card(title="Financial Overview") %}
+          <p>Welcome to your financial dashboard. Select an account type from the sidebar to get started.</p>
+        {% endcall %}
+      </div>
+    </div>
+    {% endblock %}
+  </div>
+</div>
+
+<!-- Include Feather Icons (for the sidebar icons) -->
+<script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+<script>
+  feather.replace();
+</script>
+
+<!-- Add some custom CSS for the sidebar -->
+<style>
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 48px 0 0;
+    /* Increased margin-top to prevent overlap with navbar */
+    margin-top: 4.5rem;
+    background-color: var(--color-bg-primary) !important;
+    /* Added more defined box-shadow and border for better edge definition */
+    box-shadow: var(--shadow-lg);
+    border-right: 1px solid rgba(138, 43, 226, 0.3);
+  }
+  
+  .sidebar-sticky {
+    position: relative;
+    top: 0;
+    height: calc(100vh - 48px);
+    padding-top: .5rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+  
+  .sidebar .nav-link {
+    font-weight: 500;
+    color: var(--color-text-muted);
+    padding: .75rem 1rem;
+  }
+  
+  .sidebar .nav-link:hover {
+    color: var(--color-primary-light);
+  }
+  
+  .sidebar .nav-link.active {
+    color: var(--color-primary);
+    font-weight: bold;
+    /* Added left border to highlight the active link */
+    border-left: 3px solid var(--color-primary);
+    padding-left: 0.85rem;
+  }
+  
+  .sidebar-heading {
+    color: var(--color-primary) !important;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    font-weight: bold;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(138, 43, 226, 0.2);
+    margin-right: 1rem;
+    margin-left: 1rem;
+  }
+  
+  @media (max-width: 767.98px) {
+    .sidebar {
+      position: relative;
+      padding-top: 0;
+      margin-top: 1rem;
+      border-right: none;
+      border-bottom: 1px solid rgba(138, 43, 226, 0.3);
+    }
+  }
+  
+  /* Dashboard specific styles */
+  .border-bottom {
+    border-color: #444 !important;
+  }
+</style>
+{% endblock %}

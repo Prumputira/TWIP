@@ -1,0 +1,142 @@
+:root {
+  /* Colors */
+  --color-bg-primary: #2a2a2a;
+  --color-bg-secondary: #343a40;
+  --color-bg-card: #3a3a3a;
+  --color-bg-nav: #212121;
+  
+  /* Brand colors */
+  --color-primary: #8A2BE2;
+  --color-primary-hover: #9966CC;
+  --color-primary-light: #b28dff;
+  
+  /* Text colors */
+  --color-text: #ffffff;
+  --color-text-muted: #cccccc;
+  
+  /* Border colors */
+  --color-border: #444;
+  --color-border-light: #555;
+  
+  /* Spacing */
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 3rem;
+  
+  /* Border radius */
+  --border-radius: 8px;
+  
+  /* Box shadow */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.12);
+  --shadow-md: 0 0 10px rgba(0,0,0,0.2);
+  --shadow-lg: 2px 0 10px rgba(0,0,0,0.5);
+}
+
+/* Base elements */
+body {
+  background-color: var(--color-bg-primary);
+  color: var(--color-text);
+}
+
+.container {
+  background-color: var(--color-bg-secondary);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  margin-top: var(--spacing-md);
+  box-shadow: var(--shadow-md);
+}
+
+/* Navbar styling */
+.navbar {
+  background-color: var(--color-bg-nav) !important;
+  box-shadow: 0 2px 10px rgba(138, 43, 226, 0.2);
+}
+
+.navbar-center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+}
+
+/* Cards styling */
+.card {
+  background-color: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
+}
+
+.card-header {
+  background-color: var(--color-border);
+  border-bottom: 1px solid var(--color-border-light);
+  color: var(--color-text);
+}
+
+/* Button styling */
+.btn-primary {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-hover);
+  border-color: var(--color-primary-hover);
+}
+
+/* Form styling */
+.form-control {
+  background-color: var(--color-border);
+  border: 1px solid var(--color-border-light);
+  color: var(--color-text);
+}
+
+.form-control:focus {
+  background-color: var(--color-border);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 0.2rem rgba(138, 43, 226, 0.25);
+  color: var(--color-text);
+}
+
+/* Link styling */
+a {
+  color: var(--color-primary-light);
+}
+
+a:hover {
+  color: var(--color-primary-hover);
+}
+
+/* Navbar links */
+.navbar-dark .navbar-nav .nav-link {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.navbar-dark .navbar-nav .nav-link:hover {
+  color: var(--color-primary-light);
+}
+
+.navbar-dark .navbar-nav .nav-link.active {
+  color: var(--color-primary);
+  font-weight: bold;
+}
+
+/* Helper classes */
+.text-purple {
+  color: var(--color-primary);
+}
+
+.divider {
+  height: 3px;
+  width: 100px;
+  background: linear-gradient(to right, rgba(138, 43, 226, 0.2), rgba(138, 43, 226, 1), rgba(138, 43, 226, 0.2));
+}
+
+/* Section titles */
+.section-title {
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 0.75rem;
+  font-weight: 600;
+}

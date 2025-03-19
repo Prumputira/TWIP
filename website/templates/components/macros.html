@@ -1,0 +1,78 @@
+{# Button component #}
+{% macro button(text, type="primary", icon=None, id=None, class="", attrs={}) -%}
+<button 
+  class="btn btn-{{ type }} {{ class }}" 
+  {% if id %}id="{{ id }}"{% endif %}
+  {% for attr_name, attr_value in attrs.items() %}
+    {{ attr_name }}="{{ attr_value }}"
+  {% endfor %}
+>
+  {% if icon %}<i class="fa fa-{{ icon }} mr-2"></i>{% endif %}
+  {{ text }}
+</button>
+{%- endmacro %}
+
+{# Card component with call block for content #}
+{% macro card(title=None, header_class="", body_class="") -%}
+<div class="card mb-4">
+  {% if title %}
+  <div class="card-header {{ header_class }}">
+    {{ title }}
+  </div>
+  {% endif %}
+  <div class="card-body {{ body_class }}">
+    {{ caller() }}
+  </div>
+</div>
+{%- endmacro %}
+
+{# Form field component #}
+{% macro form_field(field, label=None, class="") -%}
+<div class="form-group">
+  {% if label %}
+    <label for="{{ field.id }}">{{ label }}</label>
+  {% else %}
+    {{ field.label }}
+  {% endif %}
+  {{ field(class="form-control " + class) }}
+  {% if field.errors %}
+  <div class="invalid-feedback d-block">
+    {% for error in field.errors %}
+      {{ error }}
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{%- endmacro %}
+
+{# Alert component #}
+{% macro alert(message, category="info", dismissable=True) -%}
+<div class="alert alert-{{ category }} {% if dismissable %}alert-dismissible fade show{% endif %}" role="alert">
+  {{ message }}
+  {% if dismissable %}
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+  {% endif %}
+</div>
+{%- endmacro %}
+
+{# Sidebar navigation item #}
+{% macro sidebar_item(text, url, icon=None, active=False) -%}
+<li class="nav-item">
+  <a class="nav-link {% if active %}active{% endif %}" href="{{ url }}">
+    {% if icon %}<span data-feather="{{ icon }}"></span>{% endif %}
+    {{ text }}
+  </a>
+</li>
+{%- endmacro %}
+
+{# Section Title Component #}
+{% macro section_title(title, subtitle=None) -%}
+<div class="mb-4">
+  <h2 class="section-title">{{ title }}</h2>
+  {% if subtitle %}
+  <p class="text-muted">{{ subtitle }}</p>
+  {% endif %}
+</div>
+{%- endmacro %}

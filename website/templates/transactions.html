@@ -1,0 +1,846 @@
+{% extends "base.html" %}
+{% from "components/macros.html" import button, card, form_field, section_title %}
+
+{% block title %}Transactions{% endblock %}
+
+{% block content %}
+<div class="transactions-page">
+  <section>
+    {{ section_title("Transactions", "Record and manage your financial transactions") }}
+  </section>
+
+  <!-- New Transaction Form -->
+  {% call card(title="New Transaction") %}
+    <form id="transaction-form" class="row">
+      <input type="hidden" id="transaction-id" value="">
+      <!-- Date Field -->
+      <div class="form-group col-md-2">
+        <label for="transaction-date">Date</label>
+        <input type="date" class="form-control" id="transaction-date" value="{{ today_date }}" required>
+      </div>
+
+      <!-- Type Field -->
+      <div class="form-group col-md-2">
+        <label for="transaction-type">Type</label>
+        <select class="form-control" id="transaction-type" required>
+          <option value="">Select Type</option>
+          <option value="expense">Expense</option>
+          <option value="income">Income</option>
+          <option value="transfer">Transfer</option>
+        </select>
+      </div>
+
+      <!-- Category Field -->
+      <div class="form-group col-md-2">
+        <label for="transaction-category">Category</label>
+        <div class="input-group">
+          <select class="form-control" id="transaction-category" required>
+            <option value="">Select Category</option>
+            <option value="food">Food & Dining</option>
+            <option value="housing">Housing</option>
+            <option value="transportation">Transportation</option>
+            <option value="utilities">Utilities</option>
+            <option value="entertainment">Entertainment</option>
+            <option value="healthcare">Healthcare</option>
+            <option value="debt">Debt Payments</option>
+            <option value="income">Income</option>
+            <option value="savings">Savings</option>
+            <option value="other">Other</option>
+            <option value="new">+ New Category</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Sub-Category Field -->
+      <div class="form-group col-md-2">
+        <label for="transaction-subcategory">Sub-Category</label>
+        <div class="input-group">
+          <select class="form-control" id="transaction-subcategory">
+            <option value="">Select Sub-Category</option>
+            <option value="new">+ New Sub-Category</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Amount Field -->
+      <div class="form-group col-md-2">
+        <label for="transaction-amount">Amount</label>
+        <div class="input-group">
+          <div class="input-group-prepend">
+            <span class="input-group-text">$</span>
+          </div>
+          <input type="number" class="form-control" id="transaction-amount" min="0" step="0.01" placeholder="0.00" required>
+        </div>
+      </div>
+
+      <!-- Note Field -->
+      <div class="form-group col-md-2">
+        <label for="transaction-note">Note</label>
+        <input type="text" class="form-control" id="transaction-note" placeholder="Optional note">
+      </div>
+
+      <!-- Buttons -->
+      <div class="col-12 mt-3 text-right">
+        <button type="button" class="btn btn-secondary mr-2" id="cancel-edit" style="display: none;">
+          <i class="fa fa-times mr-2"></i>Cancel
+        </button>
+        {{ button("Save Transaction", icon="save", id="save-transaction") }}
+      </div>
+    </form>
+  {% endcall %}
+
+  <!-- Transaction List -->
+  {% call card(title="Your Transactions") %}
+    <div class="table-responsive">
+      <table class="table table-hover" id="transactions-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Type</th>
+            <th>Category</th>
+            <th>Sub-Category</th>
+            <th>Amount</th>
+            <th>Note</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="transactions-body">
+          <!-- Transactions will be loaded dynamically -->
+        </tbody>
+      </table>
+    </div>
+    
+    <!-- Load More Button -->
+    <div class="text-center mt-3">
+      {{ button("Load More Transactions", type="secondary", id="load-more", icon="refresh") }}
+    </div>
+  {% endcall %}
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="delete-modal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Are you sure you want to delete this transaction? This action cannot be undone.
+      </div>
+      <div class="modal-footer">
+        <input type="hidden" id="delete-transaction-id">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirm-delete">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New Category Modal -->
+<div class="modal fade" id="new-category-modal" tabindex="-1" role="dialog" aria-labelledby="newCategoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="newCategoryModalLabel">Create New Category</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="new-category-name">Category Name</label>
+          <input type="text" class="form-control" id="new-category-name" placeholder="Enter category name">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="save-new-category">Save Category</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- New Sub-Category Modal -->
+<div class="modal fade" id="new-subcategory-modal" tabindex="-1" role="dialog" aria-labelledby="newSubcategoryModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="newSubcategoryModalLabel">Create New Sub-Category</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="parent-category">Parent Category</label>
+          <input type="text" class="form-control" id="parent-category" readonly>
+        </div>
+        <div class="form-group">
+          <label for="new-subcategory-name">Sub-Category Name</label>
+          <input type="text" class="form-control" id="new-subcategory-name" placeholder="Enter sub-category name">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-primary" id="save-new-subcategory">Save Sub-Category</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% block javascript %}
+<script>
+  // Sample subcategories organized by category (this would come from your backend)
+  const subcategories = {
+    'food': ['Groceries', 'Restaurants', 'Coffee Shops', 'Fast Food'],
+    'housing': ['Rent', 'Mortgage', 'Property Tax', 'Home Insurance', 'Repairs'],
+    'transportation': ['Gas', 'Car Insurance', 'Car Maintenance', 'Public Transit'],
+    'utilities': ['Electricity', 'Water', 'Internet', 'Phone'],
+    'entertainment': ['Movies', 'Subscription Services', 'Hobbies'],
+    'healthcare': ['Doctor', 'Medication', 'Health Insurance'],
+    'debt': ['Credit Card', 'Student Loan', 'Personal Loan'],
+    'income': ['Salary', 'Bonus', 'Investment Income', 'Side Hustle'],
+    'savings': ['Emergency Fund', 'Retirement', 'Investment'],
+    'other': ['Miscellaneous']
+  };
+
+  // Counter for new transaction IDs (only used for client-side operations before save)
+  let nextTransactionId = 1;
+  let editMode = false;
+  let currentPage = 1;
+  let totalPages = 1;
+  
+  // Format currency
+  function formatCurrency(amount) {
+    return '$' + parseFloat(amount).toFixed(2);
+  }
+
+  // Set today's date as default
+  document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('transaction-date').value = today;
+
+    // Elements
+    const categorySelect = document.getElementById('transaction-category');
+    const subcategorySelect = document.getElementById('transaction-subcategory');
+    const saveButton = document.getElementById('save-transaction');
+    const cancelEditBtn = document.getElementById('cancel-edit');
+    const transactionForm = document.getElementById('transaction-form');
+    const transactionIdInput = document.getElementById('transaction-id');
+    const loadMoreBtn = document.getElementById('load-more');
+    
+    // Load initial transactions
+    loadTransactions();
+    
+    // Load More button click handler
+    loadMoreBtn.addEventListener('click', function() {
+      if (currentPage < totalPages) {
+        currentPage++;
+        loadTransactions(currentPage, true); // true to append instead of replace
+      }
+    });
+    
+    // Category change handling
+    categorySelect.addEventListener('change', function() {
+      const category = this.value;
+      
+      // Clear existing options
+      while (subcategorySelect.options.length > 0) {
+        subcategorySelect.options.remove(0);
+      }
+      
+      // Add default option
+      const defaultOption = document.createElement('option');
+      defaultOption.text = 'Select Sub-Category';
+      defaultOption.value = '';
+      subcategorySelect.add(defaultOption);
+      
+      if (category === 'new') {
+        // Show modal to create new category
+        $('#new-category-modal').modal('show');
+        // Reset category select to avoid keeping "new" selected
+        this.selectedIndex = 0;
+      } else if (category) {
+        // Populate subcategories based on selected category
+        const options = subcategories[category] || [];
+        options.forEach(subcat => {
+          const option = document.createElement('option');
+          option.text = subcat;
+          option.value = subcat.toLowerCase().replace(/\s+/g, '_');
+          subcategorySelect.add(option);
+        });
+        
+        // Add "New Sub-Category" option
+        const newOption = document.createElement('option');
+        newOption.text = '+ New Sub-Category';
+        newOption.value = 'new';
+        subcategorySelect.add(newOption);
+      }
+    });
+    
+    // Handle sub-category "new" selection
+    subcategorySelect.addEventListener('change', function() {
+      if (this.value === 'new') {
+        // Set parent category in modal
+        document.getElementById('parent-category').value = 
+          categorySelect.options[categorySelect.selectedIndex].text;
+        
+        // Show modal to create new sub-category
+        $('#new-subcategory-modal').modal('show');
+        
+        // Reset sub-category select to avoid keeping "new" selected
+        this.selectedIndex = 0;
+      }
+    });
+    
+    // Save transaction handler
+    saveButton.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      // Get form values
+      const transactionId = transactionIdInput.value;
+      const date = document.getElementById('transaction-date').value;
+      const type = document.getElementById('transaction-type').value;
+      const categoryIndex = categorySelect.selectedIndex;
+      const subcategoryIndex = subcategorySelect.selectedIndex;
+      
+      if (categoryIndex <= 0) {
+        alert('Please select a category.');
+        return;
+      }
+      
+      const category = categorySelect.options[categoryIndex].text;
+      const subcategory = subcategoryIndex > 0 ? subcategorySelect.options[subcategoryIndex].text : '';
+      const amount = document.getElementById('transaction-amount').value;
+      const note = document.getElementById('transaction-note').value;
+      
+      // Basic validation
+      if (!date || !type || !amount) {
+        alert('Please fill in all required fields.');
+        return;
+      }
+      
+      const transactionData = {
+        date: date,
+        type: type,
+        category: category,
+        subcategory: subcategory,
+        amount: parseFloat(amount),
+        note: note
+      };
+      
+      if (editMode) {
+        // Update transaction in database
+        updateTransaction(transactionId, transactionData);
+      } else {
+        // Add new transaction to database
+        createTransaction(transactionData);
+      }
+    });
+    
+    // Cancel edit button handler
+    cancelEditBtn.addEventListener('click', function() {
+      exitEditMode();
+    });
+    
+    // Add click handlers for edit and delete buttons
+    document.addEventListener('click', function(e) {
+      // Handle edit buttons
+      if (e.target.closest('.edit-btn')) {
+        const row = e.target.closest('tr');
+        const id = row.getAttribute('data-id');
+        editTransaction(id, row);
+      }
+      
+      // Handle delete buttons
+      if (e.target.closest('.delete-btn')) {
+        const row = e.target.closest('tr');
+        const id = row.getAttribute('data-id');
+        // Set the ID in the delete modal
+        document.getElementById('delete-transaction-id').value = id;
+        // Show delete confirmation modal
+        $('#delete-modal').modal('show');
+      }
+    });
+    
+    // Confirm delete button handler
+    document.getElementById('confirm-delete').addEventListener('click', function() {
+      const id = document.getElementById('delete-transaction-id').value;
+      deleteTransactionFromDB(id);
+    });
+    
+    // Function to load transactions from the server
+    function loadTransactions(page = 1, append = false, retryCount = 0) {
+      // Show a loading indicator
+      const loadingIndicator = document.getElementById('loading-indicator') || createLoadingIndicator();
+      loadingIndicator.style.display = 'block';
+      
+      fetch(`/api/transactions?page=${page}&per_page=10`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Server responded with status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          // Hide loading indicator on success
+          loadingIndicator.style.display = 'none';
+          
+          if (!append) {
+            // Clear the table if not appending
+            document.getElementById('transactions-body').innerHTML = '';
+          }
+          
+          // Update pagination info
+          totalPages = data.total_pages || 1;
+          
+          // Update the "Load More" button visibility
+          loadMoreBtn.style.display = data.has_next ? 'inline-block' : 'none';
+          
+          // Add transactions to the table
+          if (data.transactions && data.transactions.length > 0) {
+            data.transactions.forEach(transaction => {
+              addTransactionToTable(
+                transaction.id,
+                transaction.date,
+                transaction.type,
+                transaction.category,
+                transaction.subcategory,
+                transaction.amount,
+                transaction.note,
+                false // don't animate when loading from DB
+              );
+            });
+          } else {
+            // If no transactions, show a message
+            if (!append && document.getElementById('transactions-body').children.length === 0) {
+              showNoTransactionsMessage();
+            }
+          }
+        })
+        .catch(error => {
+          console.error('Error loading transactions:', error);
+          
+          // Hide loading indicator on error
+          loadingIndicator.style.display = 'none';
+          
+          // If this is the first load and we haven't retried too many times, try again
+          if (retryCount < 3 && !append) {
+            console.log(`Retrying load (attempt ${retryCount + 1})...`);
+            // Show retry message
+            showRetryMessage();
+            // Retry after a delay
+            setTimeout(() => {
+              loadTransactions(page, append, retryCount + 1);
+            }, 1500);
+          } else if (!append) {
+            // If we've tried several times or it's not the first load,
+            // show a user-friendly message instead of an alert
+            showErrorMessage("Couldn't load your transactions. Please refresh the page to try again.");
+          }
+        });
+    }
+    
+    // Function to create a transaction in the database
+    function createTransaction(transactionData) {
+      console.log('Sending transaction data:', transactionData);
+      fetch('/api/transactions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(transactionData)
+      })
+      .then(response => {
+        console.log('Response status:', response.status);
+        return response.json().then(data => {
+          if (!response.ok) {
+            console.error('Error response:', data);
+            throw new Error(data.message || 'Server error');
+          }
+          return data;
+        });
+      })
+      .then(data => {
+        console.log('Success data:', data);
+        if (data.success) {
+          // Add the transaction to the table
+          const transaction = data.transaction;
+          addTransactionToTable(
+            transaction.id,
+            transaction.date,
+            transaction.type,
+            transaction.category,
+            transaction.subcategory,
+            transaction.amount,
+            transaction.note,
+            true // animate
+          );
+          
+          // Clear form
+          transactionForm.reset();
+          document.getElementById('transaction-date').value = new Date().toISOString().split('T')[0];
+          flash('Transaction added successfully!', 'success');
+        } else {
+          alert('Error: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error creating transaction:', error);
+        alert('Failed to save transaction: ' + error.message);
+      });
+    }
+    
+    // Function to update a transaction in the database
+    function updateTransaction(id, transactionData) {
+      fetch(`/api/transactions/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(transactionData)
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Update the transaction in the table
+          const transaction = data.transaction;
+          updateTransactionInTable(
+            transaction.id,
+            transaction.date,
+            transaction.type,
+            transaction.category,
+            transaction.subcategory,
+            transaction.amount,
+            transaction.note
+          );
+          
+          // Exit edit mode
+          exitEditMode();
+          flash('Transaction updated successfully!', 'success');
+        } else {
+          alert('Error: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error updating transaction:', error);
+        alert('Failed to update transaction. Please try again.');
+      });
+    }
+    
+    // Function to delete a transaction from the database
+    function deleteTransactionFromDB(id) {
+      fetch(`/api/transactions/${id}`, {
+        method: 'DELETE'
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // Remove the transaction from the table
+          deleteTransaction(id);
+          $('#delete-modal').modal('hide');
+          flash('Transaction deleted successfully!', 'success');
+        } else {
+          alert('Error: ' + data.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error deleting transaction:', error);
+        alert('Failed to delete transaction. Please try again.');
+      });
+    }
+    
+    // Function to add a transaction to the table
+    function addTransactionToTable(id, date, type, category, subcategory, amount, note, animate = true) {
+      const tbody = document.getElementById('transactions-body');
+      
+      // Create a new row and insert it at the top
+      const newRow = tbody.insertRow(0);
+      newRow.setAttribute('data-id', id);
+      
+      // Format amount with dollar sign
+      const formattedAmount = formatCurrency(amount);
+      
+      // Add cells with data
+      newRow.innerHTML = `
+        <td>${date}</td>
+        <td>${type.charAt(0).toUpperCase() + type.slice(1)}</td>
+        <td>${category}</td>
+        <td>${subcategory || '-'}</td>
+        <td>${formattedAmount}</td>
+        <td>${note || '-'}</td>
+        <td>
+          <button class="btn btn-sm btn-outline-primary edit-btn"><i class="fa fa-pencil"></i></button>
+          <button class="btn btn-sm btn-outline-danger delete-btn"><i class="fa fa-trash"></i></button>
+        </td>
+      `;
+      
+      // Add animation for visual feedback if requested
+      if (animate) {
+        newRow.classList.add('new-transaction');
+        setTimeout(() => newRow.classList.remove('new-transaction'), 3000);
+      }
+    }
+    
+    // Function to update a transaction in the table
+    function updateTransactionInTable(id, date, type, category, subcategory, amount, note) {
+      const row = document.querySelector(`tr[data-id="${id}"]`);
+      if (!row) return;
+      
+      // Format amount with dollar sign
+      const formattedAmount = formatCurrency(amount);
+      
+      // Update row cells
+      row.cells[0].textContent = date;
+      row.cells[1].textContent = type.charAt(0).toUpperCase() + type.slice(1);
+      row.cells[2].textContent = category;
+      row.cells[3].textContent = subcategory || '-';
+      row.cells[4].textContent = formattedAmount;
+      row.cells[5].textContent = note || '-';
+      
+      // Add animation for visual feedback
+      row.classList.add('updated-transaction');
+      setTimeout(() => row.classList.remove('updated-transaction'), 3000);
+    }
+    
+    // Function to delete a transaction
+    function deleteTransaction(id) {
+      const row = document.querySelector(`tr[data-id="${id}"]`);
+      if (row) {
+        // Add deletion animation
+        row.classList.add('deleting-transaction');
+        
+        // Remove after animation finishes
+        setTimeout(() => {
+          row.remove();
+        }, 500);
+      }
+    }
+    
+    // Function to enter edit mode for a transaction
+    function editTransaction(id, row) {
+      // Switch to edit mode
+      editMode = true;
+      transactionIdInput.value = id;
+      
+      // Extract data from the row
+      const date = row.cells[0].textContent;
+      const type = row.cells[1].textContent.toLowerCase();
+      const category = row.cells[2].textContent;
+      const subcategory = row.cells[3].textContent !== '-' ? row.cells[3].textContent : '';
+      const amount = row.cells[4].textContent.replace(/[^0-9.]/g, '');
+      const note = row.cells[5].textContent !== '-' ? row.cells[5].textContent : '';
+      
+      // Populate form with data
+      document.getElementById('transaction-date').value = date;
+      
+      // Set type dropdown
+      const typeSelect = document.getElementById('transaction-type');
+      for (let i = 0; i < typeSelect.options.length; i++) {
+        if (typeSelect.options[i].value === type) {
+          typeSelect.selectedIndex = i;
+          break;
+        }
+      }
+      
+      // Set category dropdown
+      for (let i = 0; i < categorySelect.options.length; i++) {
+        if (categorySelect.options[i].text === category) {
+          categorySelect.selectedIndex = i;
+          // Manually trigger change to populate subcategories
+          categorySelect.dispatchEvent(new Event('change'));
+          break;
+        }
+      }
+      
+      // Set subcategory dropdown after subcategories are populated
+      setTimeout(() => {
+        for (let i = 0; i < subcategorySelect.options.length; i++) {
+          if (subcategorySelect.options[i].text === subcategory) {
+            subcategorySelect.selectedIndex = i;
+            break;
+          }
+        }
+      }, 100);
+      
+      document.getElementById('transaction-amount').value = amount;
+      document.getElementById('transaction-note').value = note;
+      
+      // Update UI for edit mode
+      saveButton.innerHTML = '<i class="fa fa-check mr-2"></i>Update Transaction';
+      cancelEditBtn.style.display = 'inline-block';
+      
+      // Scroll to form
+      document.querySelector('.card-header').scrollIntoView({ behavior: 'smooth' });
+    }
+    
+    // Function to exit edit mode
+    function exitEditMode() {
+      editMode = false;
+      transactionIdInput.value = '';
+      transactionForm.reset();
+      document.getElementById('transaction-date').value = new Date().toISOString().split('T')[0];
+      
+      // Update UI back to normal
+      saveButton.innerHTML = '<i class="fa fa-save mr-2"></i>Save Transaction';
+      cancelEditBtn.style.display = 'none';
+    }
+    
+    // Helper function to show flash messages
+    function flash(message, category = 'info') {
+      // Create a bootstrap alert
+      const alertDiv = document.createElement('div');
+      alertDiv.className = `alert alert-${category} alert-dismissible fade show mt-3`;
+      alertDiv.role = 'alert';
+      alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      `;
+      
+      // Insert it at the top of the page
+      const container = document.querySelector('.container');
+      container.insertBefore(alertDiv, container.firstChild);
+      
+      // Auto dismiss after 5 seconds
+      setTimeout(() => {
+        $(alertDiv).alert('close');
+      }, 5000);
+    }
+    
+    // Add these helper functions
+    function createLoadingIndicator() {
+      const div = document.createElement('div');
+      div.id = 'loading-indicator';
+      div.className = 'text-center my-4';
+      div.innerHTML = `
+        <div class="spinner-border text-purple" role="status">
+          <span class="sr-only">Loading...</span>
+        </div>
+        <p class="mt-2">Loading your transactions...</p>
+      `;
+      
+      // Insert before the transaction table
+      const tableContainer = document.querySelector('.table-responsive');
+      tableContainer.parentNode.insertBefore(div, tableContainer);
+      
+      return div;
+    }
+
+    function showNoTransactionsMessage() {
+      const tbody = document.getElementById('transactions-body');
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td colspan="7" class="text-center py-4">
+          <p class="mb-2">You don't have any transactions yet.</p>
+          <p>Add your first transaction using the form above.</p>
+        </td>
+      `;
+      tbody.appendChild(row);
+    }
+
+    function showRetryMessage() {
+      const messageDiv = document.getElementById('retry-message') || document.createElement('div');
+      messageDiv.id = 'retry-message';
+      messageDiv.className = 'alert alert-info text-center my-3';
+      messageDiv.innerHTML = `
+        <i class="fa fa-refresh fa-spin mr-2"></i>
+        Connecting to database...
+      `;
+      
+      // Insert before the transaction table
+      const tableContainer = document.querySelector('.table-responsive');
+      if (!document.getElementById('retry-message')) {
+        tableContainer.parentNode.insertBefore(messageDiv, tableContainer);
+      }
+      
+      return messageDiv;
+    }
+
+    function showErrorMessage(message) {
+      // Remove any existing error messages
+      const existingError = document.getElementById('transactions-error');
+      if (existingError) {
+        existingError.remove();
+      }
+      
+      const errorDiv = document.createElement('div');
+      errorDiv.id = 'transactions-error';
+      errorDiv.className = 'alert alert-danger my-3';
+      errorDiv.innerHTML = `
+        <i class="fa fa-exclamation-circle mr-2"></i>
+        ${message}
+        <button type="button" class="btn btn-sm btn-outline-light ml-3" onclick="location.reload()">
+          <i class="fa fa-refresh mr-1"></i> Refresh
+        </button>
+      `;
+      
+      // Insert before the transaction table
+      const tableContainer = document.querySelector('.table-responsive');
+      tableContainer.parentNode.insertBefore(errorDiv, tableContainer);
+    }
+  });
+</script>
+
+<style>
+  /* Additional styling for the transactions page */
+  .table td, .table th {
+    vertical-align: middle;
+  }
+  
+  .new-transaction {
+    animation: highlight-row-green 3s ease-in-out;
+  }
+  
+  .updated-transaction {
+    animation: highlight-row-blue 3s ease-in-out;
+  }
+  
+  .deleting-transaction {
+    animation: fade-out 0.5s ease-out forwards;
+  }
+  
+  @keyframes highlight-row-green {
+    0% { background-color: rgba(138, 43, 226, 0.2); }
+    100% { background-color: transparent; }
+  }
+  
+  @keyframes highlight-row-blue {
+    0% { background-color: rgba(66, 139, 202, 0.2); }
+    100% { background-color: transparent; }
+  }
+  
+  @keyframes fade-out {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(-100%); }
+  }
+  
+  /* Make modals match our dark theme */
+  .modal-content {
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+  }
+  
+  .modal-header {
+    border-bottom-color: var(--color-border);
+  }
+  
+  .modal-footer {
+    border-top-color: var(--color-border);
+  }
+  
+  .close {
+    color: var(--color-text);
+  }
+  
+  .close:hover {
+    color: var(--color-text);
+  }
+</style>
+{% endblock %}
+{% endblock %}

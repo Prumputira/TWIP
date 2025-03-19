@@ -1,0 +1,21 @@
+{% extends "dashboard.html" %}
+{% from "components/macros.html" import button, card %}
+
+{% block dashboard_content %}
+<div class="row">
+  <div class="col-12">
+    <h2>Bank Accounts</h2>
+    <p>View and manage your bank accounts here.</p>
+    
+    {% call card(title="Your Bank Accounts") %}
+      {% if accounts %}
+        <!-- Display accounts when we have them -->
+        <p>Your accounts will appear here.</p>
+      {% else %}
+        <p>No bank accounts added yet. Add your first bank account to get started.</p>
+        {{ button("Add Bank Account", icon="plus") }}
+      {% endif %}
+    {% endcall %}
+  </div>
+</div>
+{% endblock %}
